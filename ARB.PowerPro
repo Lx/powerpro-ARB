@@ -1,0 +1,163 @@
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; Alias Run Box v1.0
+
+; Written by Alex Peters, 6/5/2004
+; Heavily based upon code by Ravi and swzoh
+; Original implementation by Luciano Espirito Santo
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; This script must reside in PowerPro's Scripts folder (usually
+; C:\Program Files\PowerPro\Scripts) and have an extension of
+; .PowerPro or .TXT in order to function correctly.
+
+; Set the following two variables to the full path of where you
+; would like your list data to be stored.
+
+Local AliasListPath = PProFolder ++ "Data\AliasList.txt"
+Local HistoryListPath = PProFolder ++ "Data\AliasHistoryList.txt"
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; the content of these variables are to be remembered across script runs
+
+Static AliasList
+Static AutoCompletionVector
+Static HistoryList
+
+; if the list of aliases are not in memory, or it has been requested
+; that this list is loaded, attempt to load it from the alias list file
+
+If(Not(AliasList) || Arg(1) == "Load" || Arg(1) == "Refresh") Do
+
+; if this list file does not exist, or it has been requested that this
+; list is rebuilt, parse the script file for labels and save these to
+; the alias list file
+
+    AliasList = ""
+    HistoryList = ""
+
+    If(Not(ValidPath(AliasListPath)) || Arg(1) == "Refresh") Do
+
+; ascertain the full path of the Alias script for use in file operations
+
+        Local ScriptPath = ScriptFolder ++ "\" ++ ScriptName ++ "."
+        ScriptPath = ScriptPath ++ IfElse(ValidPath(ScriptPath ++ "txt"), "txt", "PowerPro")
+
+; perform the parsing and store the labels to a variable, minus the @
+; sign and separated by newline characters
+
+        Local ScriptHandle = File.Open(ScriptPath, "R")
+        If(ScriptHandle > 0) Do
+            For(Not(File.EOF(ScriptHandle)))
+                Local ScriptLine = Word(File.ReadString(ScriptHandle), 1)
+                If(Select(ScriptLine, 1) == "@")
+                    AliasList = AliasList ++ Remove(ScriptLine, 1) ++ "'n"
+            EndFor
+            File.Close(ScriptHandle)
+        Else
+
+; alert the user if for some reason the script could not be parsed
+
+            MessageBox("Error", "Could not open Alias script for processing:'n" ++ ScriptFile, "ARB v1.0")
+            Quit
+        EndIf
+        File.WriteAll(AliasListPath, ReplaceChars(AliasList, "'n", "'r'n"))
+    Else
+        AliasList = ReplaceChars(ReplaceChars(File.ReadAll(AliasListPath), "'r'n", "'n"), "'r", "'n")
+        If(Select(AliasList, -1) != "'n")
+            AliasList = AliasList ++ "'n"
+    EndIf
+
+; load the history list into memory
+
+    If(ValidPath(HistoryListPath)) Do
+        HistoryList = ReplaceChars(ReplaceChars(File.ReadAll(HistoryListPath), "'r'n", "'n"), "'r", "'n")
+        If(Select(HistoryList, -1) != "'n")
+            HistoryList = HistoryList ++ "'n"
+    EndIf
+
+; create the auto-completion vector, destroying it if it already exists
+
+    If(AutoCompletionVector)
+        AutoCompletionVector = Vec.Destroy(AutoCompletionVector)
+
+    AutoCompletionVector = Vec.CreateFromLines(AliasList ++ HistoryList, 1)
+    Vec.Sort(AutoCompletionVector)
+
+EndIf
+
+; display the Run box if the Load parameter wasn't used
+
+If(Arg(1) != "Load") Do
+
+    Local Run = InputDefault("Edit", "Run", "History =AutoCompletionVector")
+
+; if something was entered, process it
+
+    If(Run != "") Do
+
+; if the first word of what was entered is an alias, process it
+; accordingly
+
+        If(Index("'n" ++ AliasList, "'n" ++ Word(Run, 1) ++ "'n")) Do
+            Do("." ++ ScriptName ++ "@" ++ Word(Run, 1) ++ "('"" ++ ReplaceChars(ReplaceChars(Remove(Run, Length(Word(Run, 1)) + 1), "''", "''''"), "'"", "'''"") ++ "'")", "")
+
+; otherwise, treat it as a command and add it to the history list if it
+; does not already reside there, remembering to also update the auto-
+; completion vector and the history list file
+
+        Else
+            If(Not(Index("'n" ++ HistoryList, "'n" ++ Run ++ "'n"))) Do
+                HistoryList = HistoryList ++ Run ++ "'n"
+                Vec.Grow(AutoCompletionVector, 1)
+                AutoCompletionVector[Vec.Length(AutoCompletionVector) - 1] = Run
+                File.WriteAll(HistoryListPath, Run ++ "'r'n", "A")
+            EndIf
+            Do(Run, "")
+        EndIf
+    EndIf
+EndIf
+
+Quit
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; The Edit alias opens this script in Notepad. You may wish to change
+; it so that your preferred editor is used.
+
+@Edit
+
+    Local ScriptPath = ScriptFolder ++ "\" ++ ScriptName ++ "."
+    ScriptPath = ScriptPath ++ IfElse(ValidPath(ScriptPath ++ "txt"), "txt", "PowerPro")
+
+    Do("Notepad", ScriptPath)
+
+    Quit
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; The Refresh alias rescans this script for new aliases and updates the
+; alias list file. You need to run this alias after adding new aliases
+; to this file.
+
+@Refresh
+
+    .Alias("Refresh")
+    Quit
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; The Define alias takes the parameter specified after it and looks it
+; up in an online dictionary.
+
+@Define
+
+    Do("http://dictionary.reference.com/search?q=" ++ ReplaceChars(Arg(1), " ", "+"), "")
+    Quit
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; The Acronym alias takes the parameter specified after it and looks it
+; up in an online acronym database.
+
+@Acronym
+
+    Do("http://www.acronymfinder.com/af-query.asp?String=exact&Acronym=" ++ Case("Upper", Arg(1)), "")
+    Quit
+; ______________________________________________________________________
+
