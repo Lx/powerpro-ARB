@@ -1,8 +1,8 @@
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 Alias Run Box
 ¯¯¯¯¯¯¯¯¯¯¯¯¯
-Version 3.1
-Tuesday, 5 October 2004
+Version 3.2
+Sunday, 10 October 2004
 ________________________________________________________________________
 
 What?
@@ -17,10 +17,6 @@ Requirements
 ¯¯¯¯¯¯¯¯¯¯¯¯
 This script uses features found only in PowerPro versions v4.1 and
 above.
-
-The ARB_Add, ARB_Remove and Eval aliases currently require Standard
-Configuration to be enabled. This will be resolved in a new version, to
-be released shortly.
 ________________________________________________________________________
 
 Upgrading
@@ -35,13 +31,16 @@ Upgrading
 3. Add your own aliases to the bottom of the new copy.
 
 4. Optionally modify the AliasCachePath and CmdHistoryPath variables to
-   point to your desired locations again, if you initially changed them.
+   point to your desired locations again if you initially changed them.
 
-5. Run the PowerPro command ‘.ARB("Rebuild")’ to have any new aliases
+5. Optionally modify the DefaultCmd variable to reference your desired
+   default command.
+
+6. Run the PowerPro command ‘.ARB("Rebuild")’ to have any new aliases
    recognised, such as the alias manipulation aliases included with the
    script.
 
-6. If your configuration references the command ‘.ARB("Refresh")’, these
+7. If your configuration references the command ‘.ARB("Refresh")’, these
    references will need to be changed to ‘.ARB("Rebuild")’.
 ________________________________________________________________________
 
@@ -68,6 +67,9 @@ if these steps are not taken.
 4. Modify the AliasCachePath and CmdHistoryPath variables to point to
    your desired locations. These paths will hold a list of aliases found
    in the script and the command history, respectively.
+
+5. Optionally modify the DefaultCmd variable to reference your desired
+   default command.
 ________________________________________________________________________
 
 Invoking
@@ -83,11 +85,6 @@ ________________________________________________________________________
 
 Usage
 ¯¯¯¯¯
-PLEASE NOTE: The ARB_Add, ARB_Remove and Eval aliases have not yet been
-converted to work with Standard Configuration disabled. A new version of
-ARB with this functionality will be released soon, in addition to
-revised comments throughout the script.
-
 Invoke ARB's input box in the way that you have programmed (e.g. hotkey,
 bar button, mouse click, etc.).
 
@@ -97,7 +94,7 @@ to have that item opened.
 Enter a PowerPro command to have it executed.
 
 Enter the name of an alias that you have defined and optionally follow
-it with a space and a parameter to execute this alias.
+it with a space and parameters to execute this alias.
 
 After entering a few letters, any potential matches will appear beneath
 the text field. Pressing Tab will alternate through these choices.
@@ -110,8 +107,9 @@ You can remove unwanted aliases through ARB using the ‘ARB_Remove’
 alias. You will then be prompted for the alias to remove.
 
 You can create more complex aliases or modify existing ones by opening
-the script in a text editor and moving to the bottom of the file. After
-editing the script, you will need to invoke ARB and run the
+the script in a text editor and moving to the bottom of the file. This
+can be done through ARB's interface via the included ‘ARB_Edit’ alias.
+After editing the script, you will need to invoke ARB and run the
 ‘ARB_Rebuild’ alias for new entries to be recognised.
 
 An alias is defined by preceding its name with an @ sign, and then
@@ -121,17 +119,17 @@ ________________________________________________________________________
 
 To Conclude
 ¯¯¯¯¯¯¯¯¯¯¯
-I'd really like to know if you need any help with this script, or if it
+I'd really like to know if you need any help with this script or if it
 grows on you, so please feel free to Email me with any questions or
 comments that you may have. My Email address can be found through the
-PowerPro Yahoo! group, at:
+PowerPro Yahoo! Group at:
 
 > http://groups.yahoo.com/group/power-pro/
 
 ...or you can just leave a message at the Group -- there's a good chance
 that I'll see it just as quickly.
 
-Thanks to Ravi, swzoh and Luciano Espirito Santo for coming up with the
+Thanks to Ravi, Sean and Luciano Espirito Santo for coming up with the
 original idea and implementations.
 
 Best regards,
@@ -140,6 +138,15 @@ ________________________________________________________________________
 
 Version History
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+v3.2 (10/10/2004)
+*  The ARB_Add, ARB_Remove and Eval aliases no longer require Standard
+   Configuration to be enforced in order to work properly
+*  The DefaultCmd variable has been introduced near the top of the
+   script to aid customising the default entry in ARB's input box
+*  The ARB_Rebuild and ARB_Edit aliases now execute without error
+*  The Eval alias will now output to a message box if invoked with
+   Shift+Enter
+
 v3.1 (5/10/2004)
 *  The script no longer conforms to Standard Configuration and should
    now function without modification on any PowerPro v4.1 configuration
@@ -177,5 +184,5 @@ v1.1 (6/5/2004)
    *  Added Upgrading section
 
 v1.0 (6/5/2004)
-*  Initial Release
+*  Initial release
 ________________________________________________________________________
