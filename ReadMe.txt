@@ -1,16 +1,16 @@
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 Alias Run Box
 ¯¯¯¯¯¯¯¯¯¯¯¯¯
-Version 1.1
-Thursday, 6 May 2004
+Version 2.0
+Saturday, 8 May 2004
 ________________________________________________________________________
 
 What?
 ¯¯¯¯¯
 The Alias Run Box functions similarly to your standard Windows Run box,
-except that it allows you to execute PowerPro commands (like PowerPro's
-command line) and to execute one-word aliases that you define, with
-parameters passable to these aliases.
+except that it also allows you to execute PowerPro commands (like
+PowerPro's command line) and to execute one-word aliases that you
+define, with parameters passable to these aliases.
 ________________________________________________________________________
 
 Requirements
@@ -31,11 +31,17 @@ Upgrading
 
 2. Replace your copy of ‘ARB.PowerPro’ with the copy from this archive.
 
-3. Open the new copy and delete replace the aliases within with your
-   own ones.
+3. Add your own aliases to the bottom of the new copy.
 
-4. Optionally modify the AliasListPath and HistoryListPath variables to
+4. Optionally modify the AliasCachePath and CmdHistoryPath variables to
    point to your desired locations again, if you initially changed them.
+
+5. Run the PowerPro command ‘.ARB("Rebuild")’ to have any new aliases
+   recognised, such as the alias manipulation aliases included with the
+   script.
+
+6. If your configuration references the command ‘.ARB("Refresh")’, these
+   references will need to be changed to ‘.ARB("Rebuild")’.
 ________________________________________________________________________
 
 New Installation
@@ -53,12 +59,13 @@ even if these are not carried out.
 
    .ARB("Load")
 
-   This will load the alias list into memory at PowerPro startup, so
-   that this will not need to be done when the Run box is first shown.
+   This will load the alias cache into memory at PowerPro startup, which
+   will result in ARB displaying virtually instantly when invoked for
+   the first time.
 
-3. Modify the AliasListPath and HistoryListPath variables to point to
+3. Modify the AliasCachePath and CmdHistoryPath variables to point to
    your desired locations. These paths will hold a list of aliases found
-   in the script and previously used commands, respectively.
+   in the script and the command history, respectively.
 ________________________________________________________________________
 
 Invoking
@@ -68,21 +75,22 @@ that you haven't renamed the script:
 
 .ARB
 
-This will open the Run box, loading the alias list into memory and/or
-building it if not already done so.
+This will open ARB's input box, loading the alias cache into memory
+and/or building it if not already done so.
 ________________________________________________________________________
 
 Usage
 ¯¯¯¯¯
-Invoke the Run box in the way that you choose.
+Invoke ARB's input box in the way that you have programmed (e.g. hotkey,
+bar button, mouse click, etc.).
 
 Enter the location of a program, folder, document or Internet resource
 to have that item opened.
 
 Enter a PowerPro command to have it executed.
 
-Enter an alias that you have defined and optionally follow it with a
-space and a parameter to have this alias get to work.
+Enter the name of an alias that you have defined and optionally follow
+it with a space and a parameter to execute this alias.
 
 After entering a few letters, any potential matches will appear beneath
 the text field. Pressing Tab will alternate through these choices.
@@ -91,14 +99,17 @@ You can create simple aliases through a graphical user interface using
 the ‘Add’ alias. This will allow you to easily add aliases for
 documents, programs, one-lined PowerPro commands and such.
 
+You can remove unwanted aliases through ARB using the ‘Remove’ alias.
+You will then be prompted for the alias to remove.
+
 You can create more complex aliases or modify existing ones by opening
 the script in a text editor and moving to the bottom of the file. After
-editing the script, you will need to Invoke the Run box and run the
-‘Refresh’ aliases for new entries to be recognised.
+editing the script, you will need to invoke the Run box and run the
+‘Rebuild’ alias for new entries to be recognised.
 
 An alias is defined by preceding its name with an @ sign, and then
 every PowerPro command that follows it will be executed until a ‘Quit’
-instruction is reached. A few examples are included in the script.
+instruction is reached. A few examples are included with the script.
 ________________________________________________________________________
 
 To Conclude
@@ -122,6 +133,14 @@ ________________________________________________________________________
 
 Version History
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+v2.0 (8/5/2004)
+* Script:
+  * Complete rewrite
+  * Added ‘Remove’ alias, as per David Troesch's request
+  * Global variables are no longer created or modified
+  * ARB now responds to "Rebuild" as a parameter instead of "Refresh" --
+    this is intended to cause less confusion as to what is performed
+
 v1.1 (6/5/2004)
 * Script:
   * Added ‘Add’ alias, as per David Troesch's request
