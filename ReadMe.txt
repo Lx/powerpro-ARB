@@ -1,8 +1,8 @@
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 Alias Run Box
 ¯¯¯¯¯¯¯¯¯¯¯¯¯
-Version 3.0
-Saturday, 22 May 2004
+Version 3.1
+Tuesday, 5 October 2004
 ________________________________________________________________________
 
 What?
@@ -15,18 +15,12 @@ ________________________________________________________________________
 
 Requirements
 ¯¯¯¯¯¯¯¯¯¯¯¯
-This script uses features found in PowerPro v3.8.13 onwards, and follows
-standard configuration.
+This script uses features found only in PowerPro versions v4.1 and
+above.
 
-The ‘Use Standard Configuration’ checkbox, found under Setup > Advanced
-Setup > Configuration, should be ticked for the script to work without
-trouble.
-
-A revised version of the Vec plugin is used, which is released with
-versions of PowerPro later than v3.8.13. If you use PowerPro v3.8.13,
-please download the revised version at:
-
-> http://www.windowspowerpro.com/download/vec.dll
+The ARB_Add, ARB_Remove and Eval aliases currently require Standard
+Configuration to be enabled. This will be resolved in a new version, to
+be released shortly.
 ________________________________________________________________________
 
 Upgrading
@@ -53,15 +47,16 @@ ________________________________________________________________________
 
 New Installation
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-1. Extract the ‘ARB.PowerPro’ script to your Scripts folder (generally
-   ‘C:\Program Files\PowerPro\Scripts’). You may rename the script if
-   you wish but it must keep its .PowerPro or .TXT extension and it must
-   reside immediately under ‘\Scripts’.
+1. Extract ARB.PowerPro to your Scripts folder, e.g.:
+   C:\Program Files\PowerPro\Scripts\ARB.PowerPro
 
 The following steps are optional -- everything will work as expected
-even if these are not carried out.
+if these steps are not taken.
 
-2. Add the following command to your Scheduler tab, set to run at
+2. Rename the script if you wish. It must however keep its .PowerPro or
+   .TXT extension and it must reside immediately under ‘\Scripts’.
+
+3. Add the following command to your Scheduler tab, set to run at
    startup (assuming that you haven't renamed the script):
 
    .ARB("Load")
@@ -70,7 +65,7 @@ even if these are not carried out.
    will result in ARB displaying virtually instantly when invoked for
    the first time.
 
-3. Modify the AliasCachePath and CmdHistoryPath variables to point to
+4. Modify the AliasCachePath and CmdHistoryPath variables to point to
    your desired locations. These paths will hold a list of aliases found
    in the script and the command history, respectively.
 ________________________________________________________________________
@@ -88,6 +83,11 @@ ________________________________________________________________________
 
 Usage
 ¯¯¯¯¯
+PLEASE NOTE: The ARB_Add, ARB_Remove and Eval aliases have not yet been
+converted to work with Standard Configuration disabled. A new version of
+ARB with this functionality will be released soon, in addition to
+revised comments throughout the script.
+
 Invoke ARB's input box in the way that you have programmed (e.g. hotkey,
 bar button, mouse click, etc.).
 
@@ -103,16 +103,16 @@ After entering a few letters, any potential matches will appear beneath
 the text field. Pressing Tab will alternate through these choices.
 
 You can create simple aliases through a graphical user interface using
-the ‘Add’ alias. This will allow you to easily add aliases for
+the ‘ARB_Add’ alias. This will allow you to easily add aliases for
 documents, programs, one-lined PowerPro commands and such.
 
-You can remove unwanted aliases through ARB using the ‘Remove’ alias.
-You will then be prompted for the alias to remove.
+You can remove unwanted aliases through ARB using the ‘ARB_Remove’
+alias. You will then be prompted for the alias to remove.
 
 You can create more complex aliases or modify existing ones by opening
 the script in a text editor and moving to the bottom of the file. After
-editing the script, you will need to invoke ARB and run the ‘Rebuild’
-alias for new entries to be recognised.
+editing the script, you will need to invoke ARB and run the
+‘ARB_Rebuild’ alias for new entries to be recognised.
 
 An alias is defined by preceding its name with an @ sign, and then
 every PowerPro command that follows it will be executed until a ‘Quit’
@@ -140,32 +140,42 @@ ________________________________________________________________________
 
 Version History
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+v3.1 (5/10/2004)
+*  The script no longer conforms to Standard Configuration and should
+   now function without modification on any PowerPro v4.1 configuration
+   (currently with exception to the ARB_Add, ARB_Remove and Eval
+   aliases, which require Standard Configuration for the moment)
+*  ARB_Add now adds a commented separator to newly created aliases
+*  ARB now accepts any parameter besides "Rebuild" to load the alias
+   cache and command history into memory
+
 v3.0 (22/5/2004)
-* Script:
-  * Modified to conform to standard configuration
-  * Renamed included ‘Add’, ‘Rebuild’, ‘Remove’ and ‘Edit’ aliases to
-    ‘ARB_Add’, ‘ARB_Rebuild’, ‘ARB_Remove’ and ‘ARB_Edit’ respectively,
-    as per David Troesch's request
-  * Renamed included ‘Acronym’ alias to ‘Acro’ for ease of typing
-  * Added ‘G’, ‘Go’ and ‘Eval’ aliases -- comments on their usage are
-    included within their definitions
-* Documentation:
-  * Added revised plugin inormation to Requirements section
+*  Script:
+   *  Modified to conform to standard configuration
+   *  Renamed included ‘Add’, ‘Rebuild’, ‘Remove’ and ‘Edit’ aliases to
+      ‘ARB_Add’, ‘ARB_Rebuild’, ‘ARB_Remove’ and ‘ARB_Edit’
+      respectively, as per David Troesch's request
+   *  Renamed included ‘Acronym’ alias to ‘Acro’ for ease of typing
+   *  Added ‘G’, ‘Go’ and ‘Eval’ aliases -- comments on their usage are
+      included within their definitions
+*  Documentation:
+   *  Added revised plugin inormation to Requirements section
 
 v2.0 (8/5/2004)
-* Script:
-  * Complete rewrite
-  * Added ‘Remove’ alias, as per David Troesch's request
-  * Global variables are no longer created or modified
-  * ARB now responds to "Rebuild" as a parameter instead of "Refresh" --
-    this is intended to cause less confusion as to what is performed
+*  Script:
+   *  Complete rewrite
+   *  Added ‘Remove’ alias, as per David Troesch's request
+   *  Global variables are no longer created or modified
+   *  ARB now responds to "Rebuild" as a parameter instead of
+      "Refresh" -- this is intended to cause less confusion as to what
+      is performed
 
 v1.1 (6/5/2004)
-* Script:
-  * Added ‘Add’ alias, as per David Troesch's request
-* Documentation:
-  * Added Upgrading section
+*  Script:
+   *  Added ‘Add’ alias, as per David Troesch's request
+*  Documentation:
+   *  Added Upgrading section
 
 v1.0 (6/5/2004)
-* Initial Release
+*  Initial Release
 ________________________________________________________________________

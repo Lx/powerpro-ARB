@@ -1,20 +1,24 @@
 ; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-; ARB v3.0
-; Written by Alex Peters, 22/5/2004
+; ARB v3.1
+; Written by Alex Peters, 5/10/2004
 ; ______________________________________________________________________
 
 ; ARB will save its alias cache and command history to the locations
 ; specified below.
 
-Static AliasCachePath = PProFolder ++ "ARB_AliasCache.txt"
-Static CmdHistoryPath = PProFolder ++ "ARB_CmdHistory.txt"
+Static AliasCachePath = PProFolder ++ ?"ARB_AliasCache.txt"
+Static CmdHistoryPath = PProFolder ++ ?"ARB_CmdHistory.txt"
 
 ; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+Local CR = Esc(?"\r", ?"\")
+Local LF = Esc(?"\n", ?"\")
+Local CRLF = CR ++ LF
+
 ; Here we will ascertain where this script is located, for use in later
 ; operations.
 
-Static ScriptPath = ScriptFolder ++ "\\" ++ ScriptName ++ "."
-ScriptPath = ScriptPath ++ IfElse(ValidPath(ScriptPath ++ "PowerPro"), "PowerPro", "txt")
+Static ScriptPath = ScriptFolder ++ ?"\" ++ ScriptName ++ ?"."
+ScriptPath = ScriptPath ++ IfElse(ValidPath(ScriptPath ++ ?"PowerPro"), ?"PowerPro", ?"txt")
 
 ; Before ARB's input box can be shown, the auto-completion vector must
 ; be created. We will check now if this vector has already been created,
@@ -22,7 +26,7 @@ ScriptPath = ScriptPath ++ IfElse(ValidPath(ScriptPath ++ "PowerPro"), "PowerPro
 ; rebuilt, we will take the appropriate action.
 
 Static AutoComplete
-If(Not(AutoComplete) || Arg(1) == "Rebuild") Do
+If(Not(AutoComplete) || Arg(1) != "") Do
 
 ; We can remove the current alias cache and command history from memory,
 ; as we will regain these shortly.
@@ -35,15 +39,15 @@ If(Not(AutoComplete) || Arg(1) == "Rebuild") Do
 ; file for reading and locate all the script labels within, storing them
 ; in memory and writing them to the cache file.
 
-    If(Not(ValidPath(AliasCachePath)) || Arg(1) == "Rebuild") Do
-        Local ScriptHandle = File.Open(ScriptPath, "R")
+    If(Not(ValidPath(AliasCachePath)) || Arg(1) == ?"Rebuild") Do
+        Local ScriptHandle = File.Open(ScriptPath, ?"R")
         If(ScriptHandle > 0) Do
             For()
                 Local ScriptLine = Word(File.ReadString(ScriptHandle), 1)
                 If(File.EOF(ScriptHandle))
                     Break
-                If(Select(ScriptLine, 1) == "@")
-                    Aliases = Aliases ++ Remove(ScriptLine, 1) ++ "\n"
+                If(Select(ScriptLine, 1) == ?"@")
+                    Aliases = Aliases ++ Remove(ScriptLine, 1) ++ LF
             EndFor
             File.Close(ScriptHandle)
 
@@ -52,10 +56,10 @@ If(Not(AutoComplete) || Arg(1) == "Rebuild") Do
 ; terminate.
 
         Else
-            MessageBox("Error", "Could not open the ARB script for processing:\n" ++ ScriptPath, "ARB – Alias Parse Error")
+            MessageBox(?"Error", ?"Could not open the ARB script for processing:" ++ LF ++ ScriptPath, ?"ARB – Alias Parse Error")
             Quit
         EndIf
-        File.WriteAll(AliasCachePath, ReplaceChars(Aliases, "\n", "\r\n"))
+        File.WriteAll(AliasCachePath, ReplaceChars(Aliases, LF, CRLF))
 
 ; If the alias cache file has already been created and it has not been
 ; requested that the alias cache is rebuilt, we will simply load the
@@ -65,18 +69,18 @@ If(Not(AutoComplete) || Arg(1) == "Rebuild") Do
 ; separated by an 0x0A character only.
 
     Else
-        Aliases = ReplaceChars(ReplaceChars(File.ReadAll(AliasCachePath), "\r\n", "\n"), "\r", "\n")
-        If(Select(Aliases, -1) != "\n")
-            Aliases = Aliases ++ "\n"
+        Aliases = ReplaceChars(ReplaceChars(File.ReadAll(AliasCachePath), CRLF, LF), CR, LF)
+        If(Select(Aliases, -1) != LF)
+            Aliases = Aliases ++ LF
     EndIf
 
 ; If a command history file exists, we will load that into memory, again
 ; manipulating the way the data is held in memory.
 
     If(ValidPath(CmdHistoryPath)) Do
-        History = ReplaceChars(ReplaceChars(File.ReadAll(CmdHistoryPath), "\r\n", "\n"), "\r", "\n")
-        If(Select(History, -1) != "\n")
-            History = History ++ "\n"
+        History = ReplaceChars(ReplaceChars(File.ReadAll(CmdHistoryPath), CRLF, LF), CR, LF)
+        If(Select(History, -1) != LF)
+            History = History ++ LF
     EndIf
 
 ; We now have all the information we need in memory to create the auto-
@@ -94,7 +98,7 @@ EndIf
 ; will display the input box.
 
 If(Arg(1) == "") Do
-    Local Cmd = InputDefault("ARB_Edit", "ARB v3.0", "History =AutoComplete")
+    Local Cmd = InputDefault(?"ARB_Edit", ?"ARB v3.1", ?"History =AutoComplete")
 
 ; If the user pressed Cancel or entered nothing, then there is nothing
 ; to do and so we will stop here.
@@ -105,8 +109,22 @@ If(Arg(1) == "") Do
 ; run that particular alias, passing anything other than the first word
 ; as a parameter.
 
-        If(Index("\n" ++ Aliases, "\n" ++ Word(Cmd, 1) ++ "\n")) Do
-            .&(ScriptName)@&(Word(Cmd, 1))("&(ReplaceChars(ReplaceChars(Remove(Cmd, Length(Word(Cmd, 1)) + 1), "\\", "\\\\"), "\"", "\\\""))")
+; It is important that we escape any special characters in the parameter
+; string – we must double any backslashes and prepend double quotes with
+; a backslash.
+
+        If(Index(LF ++ Aliases, LF ++ Word(Cmd, 1) ++ LF)) Do
+			Local Params = Remove(Cmd, Length(Word(Cmd, 1)) + 1)
+			For(Local DelimCode = 2; DelimCode < 256; DelimCode = DelimCode + 1)
+				If(Not(Index(?" 10 13 19 32 ", ?" " ++ DelimCode ++ ?" "))) Do
+					Local DelimChar = Esc(?"\D" ++ Fill(?"000", DelimCode), ?"\")
+					If(Not(Index(Params, DelimChar)))
+						Break
+				EndIf
+			EndFor
+			If(DelimCode == 256)
+				Quit(MessageBox(?"Error", ?"The parameter is too complex:" ++ LF ++ Params, ?"ARB – Alias Execution Error"))
+			Do(?"." ++ ScriptName ++ ?"@" ++ Word(Cmd, 1) ++ ?"(?" ++ DelimChar ++ Params ++ DelimChar ++ ?")")
 
 ; Otherwise, we should treat it as a PowerPro command. If this exact
 ; command does not already exist in the command history, we should add
@@ -114,12 +132,12 @@ If(Arg(1) == "") Do
 ; as well the auto-completion vector.
 
         Else
-            If(Not(Index("\n" ++ History, "\n" ++ Cmd ++ "\n"))) Do
-                History = History ++ Cmd ++ "\n"
+            If(Not(Index(LF ++ History, LF ++ Cmd ++ LF))) Do
+                History = History ++ Cmd ++ LF
                 Vec.Set(AutoComplete, Vec.Length(AutoComplete), Cmd)
-                File.WriteAll(CmdHistoryPath, Cmd ++ "\r\n", "A")
+                File.WriteAll(CmdHistoryPath, Cmd ++ CRLF, ?"A")
             EndIf
-            &(Cmd)
+            Do(Cmd)
         EndIf
     EndIf
 EndIf
@@ -143,6 +161,10 @@ Quit
 ; simple like a program, folder, document, Internet resource or PowerPro
 ; command.
 
+Local CR = Esc(?"\r", ?"\")
+Local LF = Esc(?"\n", ?"\")
+Local CRLF = CR ++ LF
+
 ; Anything that is specified as a parameter will automatically be
 ; entered into the alias name text field for you.
 
@@ -153,19 +175,19 @@ Quit
 ; Cancel.
 
     For()
-        Local Title = "ARB – Add New Alias"
-        If(Not(InputDialog("AliasName=&Alias:, AliasCmd=&Target (program; document; etc.):, AliasParams=&Parameters (if any):, AliasWD=&Working directory (if required):", Title)))
+        Local Title = ?"ARB – Add New Alias"
+        If(Not(InputDialog(?"AliasName=&Alias:, AliasCmd=&Target (program; document; etc.):, AliasParams=&Parameters (if any):, AliasWD=&Working directory (if required):", Title)))
             Quit
 
 ; Here we do some basic verification to ensure that the entered
 ; information is acceptable.
 
         If(AliasName == "") Do
-            MessageBox("Warning", "The alias name is mandatory.", Title)
+            MessageBox(?"Warning", ?"The alias name is mandatory.", Title)
         ElseIf(Index(AliasName, " "))
-            MessageBox("Warning", "The alias name must not contain spaces.", Title)
+            MessageBox(?"Warning", ?"The alias name must not contain spaces.", Title)
         ElseIf(AliasCmd == "")
-            MessageBox("Warning", "The alias target is mandatory.", Title)
+            MessageBox(?"Warning", ?"The alias target is mandatory.", Title)
 
 ; If the information is acceptable, we continue; otherwise we return to
 ; the dialogue box.
@@ -178,8 +200,8 @@ Quit
 ; We need to add the new alias to the alias cache in memory, the alias
 ; cache file and the auto-completion vector.
 
-    Aliases = Aliases ++ AliasName ++ "\n"
-    File.WriteAll(AliasCachePath, AliasName ++ "\r\n", "A")
+    Aliases = Aliases ++ AliasName ++ LF
+    File.WriteAll(AliasCachePath, AliasName ++ CRLF, ?"A")
     Vec.Set(AutoComplete, Vec.Length(AutoComplete), AliasName)
 
 ; We now need to add the alias information to this script. This is a
@@ -193,8 +215,8 @@ Quit
 ; needs to be a filename that is guaranteed not to already exist.
 
     For()
-        Local TempScrName = "ARB_Temp_" ++ (Random(900) + 100)
-        Local TempScrPath = ScriptFolder ++ "\\" ++ TempScrName ++ ".PowerPro"
+        Local TempScrName = ?"ARB_Temp_" ++ (Random(900) + 100)
+        Local TempScrPath = ScriptFolder ++ ?"\" ++ TempScrName ++ ?".PowerPro"
         If(Not(ValidPath(TempScrPath)))
             Break
     EndFor
@@ -205,6 +227,11 @@ Quit
 
     AliasCmd = ReplaceChars(ReplaceChars(AliasCmd, "\\", "\\\\"), "\"", "\\\"")
     AliasParams = ReplaceChars(ReplaceChars(AliasParams, "\\", "\\\\"), "\"", "\\\"")
+
+; We need to double-escape the working directory information if it is
+; to be used. We will later also double-escape the alias command and
+; parameters if required.
+
     AliasWD = ReplaceChars(ReplaceChars(AliasWD, "\\", "\\\\\\\\"), "\"", "\\\\\\\"")
 
 ; Next, we prepare the commands that will be run by the temporary
@@ -225,7 +252,7 @@ Quit
 
     Local TempScrData = "Local Handle = File.Open(\"" ++ ReplaceChars(ScriptPath, "\\", "\\\\") ++ "\", \"A\")\nIf(Handle > 0) Do\nFile.Close(Handle)\nFile.WriteAll(\"" ++ ReplaceChars(ScriptPath, "\\", "\\\\") ++ "\", \"\\r\\n@" ++ AliasName ++ "\\r\\n\\r\\n    "
     TempScrData = TempScrData ++ IfElse(AliasWD != "", "Do(\\\"" ++ ReplaceChars(ReplaceChars(AliasCmd, "\\", "\\\\"), "\"", "\\\"") ++ "\\\", \\\"" ++ ReplaceChars(ReplaceChars(AliasParams, "\\", "\\\\"), "\"", "\\\"") ++ "\\\", \\\"" ++ AliasWD ++ "\\\")", AliasCmd ++ If(AliasParams, " " ++ AliasParams))
-    TempScrData = TempScrData ++ "\\r\\n    Quit\\r\\n\", \"A\")\nEvent.Create(5, 0, \"File.DeleteNoRecycle(\\\"" ++ ReplaceChars(TempScrPath, "\\", "\\\\\\\\") ++ "\\\")\\nIf(Not(ValidPath(\\\"" ++ ReplaceChars(TempScrPath, "\\", "\\\\\\\\") ++ "\\\")))\\nEvent.DestroyThis\")\nElse\nEvent.CreateMS(100, 1, \"." ++ TempScrName ++ "\")\nEndIf"
+    TempScrData = TempScrData ++ "\\r\\n    Quit\\r\\n; " ++ Repeat("_", 70) ++ "\\r\\n\", \"A\")\nEvent.Create(5, 0, \"File.DeleteNoRecycle(\\\"" ++ ReplaceChars(TempScrPath, "\\", "\\\\\\\\") ++ "\\\")\\nIf(Not(ValidPath(\\\"" ++ ReplaceChars(TempScrPath, "\\", "\\\\\\\\") ++ "\\\")))\\nEvent.DestroyThis\")\nElse\nEvent.CreateMS(100, 1, \"." ++ TempScrName ++ "\")\nEndIf"
 
 ; Finally, we save these commands to the temporary script, call it and
 ; quit.
@@ -244,12 +271,12 @@ Quit
 ; First, we will run a rebuild by calling this script with "Rebuild" as
 ; a parameter.
 
-    .&(ScriptName)("Rebuild")
+    Do(?"." ++ ScriptName ++ ?'("Rebuild")'
 
 ; Then we will ask PowerPro to display the ARB input box after we have
 ; quit.
 
-    Event.CreateMS(1, 1, "." ++ ScriptName)
+    Event.CreateMS(1, 1, ?"." ++ ScriptName)
     Quit
 ; ______________________________________________________________________
 
@@ -258,9 +285,13 @@ Quit
 ; The Remove alias allows you to remove aliases from this script without
 ; the need to edit the script manually.
 
+Local CR = Esc(?"\r", ?"\")
+Local LF = Esc(?"\n", ?"\")
+Local CRLF = CR ++ LF
+
 ; Aliases are removed from this script without confirmation.
 
-    Local Title = "ARB – Delete Alias"
+    Local Title = ?"ARB – Delete Alias"
 
 ; If the alias is not passed to this alias as a parameter, then we will
 ; prompt the user to enter the alias to delete.
@@ -268,7 +299,7 @@ Quit
     Local Alias = Arg(1)
     If(Alias == "") Do
         Local AliasVector = Vec.CreateFromLines(Aliases)
-        Alias = InputDefault("", Title, "=AliasVector")
+        Alias = InputDefault("", Title, ?"=AliasVector")
 
 ; Oddity – why is ‘AliasVector =’ needed here to avoid an error?
 
@@ -284,14 +315,14 @@ Quit
 ; of where the next alias begins. If the alias to delete is defined at
 ; the end of this script, then we will keep this in mind for later.
 
-        Local ScriptHandle = File.Open(ScriptPath, "R")
+        Local ScriptHandle = File.Open(ScriptPath, ?"R")
         If(ScriptHandle > 0) Do
             For(Local AliasLoc = 1; ; AliasLoc = AliasLoc + 1)
                 Local ScriptLine = Word(File.ReadString(ScriptHandle), 1)
-                If(ScriptLine == "@" ++ Alias) Do
+                If(ScriptLine == ?"@" ++ Alias) Do
                     For(Local AliasLength = 1; ; AliasLength = AliasLength + 1)
                         ScriptLine = Word(File.ReadString(ScriptHandle), 1)
-                        If(Select(ScriptLine, 1) == "@")
+                        If(Select(ScriptLine, 1) == ?"@")
                             Break
                         If(File.EOF(ScriptHandle)) Do
                             AliasLength = 0
@@ -307,7 +338,7 @@ Quit
 
                 If(File.EOF(ScriptHandle)) Do
                     File.Close(ScriptHandle)
-                    MessageBox("Warning", "Alias not found:\n" ++ Alias, Title)
+                    MessageBox(?"Warning", ?"Alias not found:" ++ LF ++ Alias, Title)
                     Quit
                 EndIf
             EndFor
@@ -318,8 +349,8 @@ Quit
 ; delete. This means that we should remove the alias from the alias
 ; cache and the auto-completion vector.
 
-            Aliases = Remove(ReplaceChars("\n" ++ Aliases, "\n" ++ Alias ++ "\n", "\n"), 1)
-            File.WriteAll(AliasCachePath, ReplaceChars(Aliases, "\n", "\r\n"))
+            Aliases = Remove(ReplaceChars(LF ++ Aliases, LF ++ Alias ++ LF, LF), 1)
+            File.WriteAll(AliasCachePath, ReplaceChars(Aliases, LF, CRLF))
             Vec.Sort(AutoComplete)
             Vec.Delete(AutoComplete, Vec.BinSearch(AutoComplete, Alias))
 
@@ -328,8 +359,8 @@ Quit
 ; described in the Add alias code.
 
             For()
-                Local TempScrName = "ARB_Temp_" ++ (Random(900) + 100)
-                Local TempScrPath = ScriptFolder ++ "\\" ++ TempScrName ++ ".PowerPro"
+                Local TempScrName = ?"ARB_Temp_" ++ (Random(900) + 100)
+                Local TempScrPath = ScriptFolder ++ ?"\" ++ TempScrName ++ ?".PowerPro"
                 If(Not(ValidPath(TempScrPath)))
                     Break
             EndFor
@@ -339,7 +370,7 @@ Quit
             File.WriteAll(TempScrPath, TempScrData)
             Event.CreateMS(100, 1, "." ++ TempScrName)
         Else
-            MessageBox("Error", "Could not open the ARB script for processing:\n" ++ ScriptPath, Title)
+            MessageBox(?"Error", ?"Could not open the ARB script for processing:" ++ LF ++ ScriptPath, Title)
             Quit
         EndIf
 
@@ -352,7 +383,7 @@ Quit
 ; The Edit alias opens this script in Notepad. You may wish to change
 ; it so that your preferred editor is used.
 
-    Notepad &(ScriptPath)
+    .@PS("\"&(ReplaceChars(ScriptPath, "\\", "\\\\"))\"")
     Quit
 
 ; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -366,7 +397,7 @@ Quit
 
 ; The G alias performs a Google search on the text specified after it.
 
-    http://www.google.com.au/search?q=&(ReplaceChars(Arg(1), " ", "+"))
+    Do(?"http://www.google.com.au/search?q=" ++ ReplaceChars(Arg(1), ?" ", ?"+"))
     Quit
 ; ______________________________________________________________________
 
@@ -375,7 +406,7 @@ Quit
 ; The Go alias performs a Google search on the text specified after it,
 ; and takes you directly to the first result.
 
-    http://www.google.com.au/search?btnI=I'm+Feeling+Lucky&q=&(ReplaceChars(Arg(1), " ", "+"))
+    Do(?"http://www.google.com.au/search?btnI=I'm+Feeling+Lucky&q=" ++ ReplaceChars(Arg(1), ?" ", ?"+"))
     Quit
 ; ______________________________________________________________________
 
@@ -384,7 +415,7 @@ Quit
 ; The Def alias takes the parameter specified after it and looks it up
 ; in an online dictionary.
 
-    http://dictionary.reference.com/search?q=&(ReplaceChars(Arg(1), " ", "+"))
+    Do(?"http://dictionary.reference.com/search?q=" ++ ReplaceChars(Arg(1), ?" ", ?"+"))
     Quit
 ; ______________________________________________________________________
 
@@ -393,7 +424,7 @@ Quit
 ; The Thes alias takes the parameter passed to it and looks it up in an
 ; online thesaurus.
 
-    http://thesaurus.reference.com/search?q=&(ReplaceChars(Arg(1), " ", "+"))
+    Do(?"http://thesaurus.reference.com/search?q=" ++ ReplaceChars(Arg(1), ?" ", ?"+"))
     Quit
 ; ______________________________________________________________________
 
@@ -402,16 +433,23 @@ Quit
 ; The Acro alias takes the parameter specified after it and looks it up
 ; in an online acronym database.
 
-    http://www.acronymfinder.com/af-query.asp?String=exact&Acronym=&(Case("Upper", Arg(1)))
+    Do(?"http://www.acronymfinder.com/af-query.asp?String=exact&Acronym=" ++ Case(?"Upper", Arg(1)))
     Quit
 ; ______________________________________________________________________
 
 @Eval
 
 ; The Eval alias passes its parameters to PowerPro for evaluation, and
-; displays the result in the PowerPro Debug window.
+; displays the result in the PowerPro Debug window. This is useful for
+; checking up on a PowerPro variable or performing a quick calculation,
+; e.g.:
 
-    Win.Debug(Eval(ReplaceChars(ReplaceChars(Arg(1), "\\\"", "\""), "\\\\", "\\")))
+; Eval 56 + (80 * 3) + 79
+; Eval RecycleSize
+
+; Floating point calculations are not accepted at this time.
+
+    Win.Debug("WARNING: Eval currently requires Standard Configuration")
+	Win.Debug(Eval(ReplaceChars(ReplaceChars(Arg(1), "\\\"", "\""), "\\\\", "\\")))
     Quit
 ; ______________________________________________________________________
-
