@@ -1,5 +1,5 @@
 ; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-; Alias Run Box v1.0
+; Alias Run Box v1.1
 
 ; Written by Alex Peters, 6/5/2004
 ; Heavily based upon code by Ravi and swzoh
@@ -13,8 +13,8 @@
 ; Set the following two variables to the full path of where you
 ; would like your list data to be stored.
 
-Local AliasListPath = PProFolder ++ "Data\AliasList.txt"
-Local HistoryListPath = PProFolder ++ "Data\AliasHistoryList.txt"
+Local AliasListPath = PProFolder ++ "Scripts\AliasList.arb"
+Local HistoryListPath = PProFolder ++ "Scripts\AliasHistoryList.arb"
 
 ; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ; the content of these variables are to be remembered across script runs
@@ -57,7 +57,7 @@ If(Not(AliasList) || Arg(1) == "Load" || Arg(1) == "Refresh") Do
 
 ; alert the user if for some reason the script could not be parsed
 
-            MessageBox("Error", "Could not open Alias script for processing:'n" ++ ScriptFile, "ARB v1.0")
+            MessageBox("Error", "Could not open Alias script for processing:'n" ++ ScriptFile, "ARB v1.1 – Error")
             Quit
         EndIf
         File.WriteAll(AliasListPath, ReplaceChars(AliasList, "'n", "'r'n"))
@@ -89,7 +89,7 @@ EndIf
 
 If(Arg(1) != "Load") Do
 
-    Local Run = InputDefault("Edit", "Run", "History =AutoCompletionVector")
+    Local Run = InputDefault("Edit", "ARB v1.1", "History =AutoCompletionVector")
 
 ; if something was entered, process it
 
@@ -120,6 +120,46 @@ EndIf
 Quit
 
 ; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; The following data defines your aliases. Should you wish to upgrade
+; this script, it's important that you save the information below to a
+; new, temporary file before replacing this script with a new copy.
+
+; You must then paste back in the information from the temporary file.
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+; The Add alias opens a graphical user interface that allows you to add
+; simple aliases.
+
+@Add
+
+    Local AliasName, AliasCmd, AliasParams, AliasWD
+
+    For()
+        Local Title = "ARB v1.1 – Add New Alias"
+        If(Not(InputDialog("AliasName=&Alias, AliasCmd=&Command, AliasParams=&Parameters (Optional), AliasWD=&Working Directory (Optional)", Title)))
+            Quit
+        If(AliasName == "") Do
+            MessageBox("Warning", "The alias name is mandatory.", Title)
+        ElseIf(Index(AliasName, " "))
+            MessageBox("Warning", "The alias name must not contain spaces.", Title)
+        ElseIf(AliasCmd == "")
+            MessageBox("Warning", "The alias command is mandatory.", Title)
+        Else
+            Break
+        EndIf
+    EndFor
+
+    Local ScriptPath = ScriptFolder ++ "\" ++ ScriptName ++ "."
+    ScriptPath = ScriptPath ++ IfElse(ValidPath(ScriptPath ++ "txt"), "txt", "PowerPro")
+
+    Global ARB_Add_Output = "@" ++ AliasName ++ "'r'n'r'n    " ++ IfElse(AliasWD != "", "Do('"" ++ ReplaceChars(ReplaceChars(AliasCmd, "''", "''''"), "'"", "'''"") ++ "'", '"" ++ ReplaceChars(ReplaceChars(AliasParams, "''", "''''"), "'"", "'''"") ++ "'", '"" ++ ReplaceChars(ReplaceChars(AliasWD, "''", "''''"), "'"", "'''"") ++ "'")", AliasCmd ++ If(AliasParams, " " ++ AliasParams)) ++ "'r'n    Quit'r'n'r'n"
+    Global ARB_Add_Handle
+
+    Event.CreateMS(1, 0, "ARB_Add_Handle = File.Open('"" ++ ScriptPath ++ "'", '"A'")'nIf(ARB_Add_Handle) Do'nFile.WriteString(ARB_Add_Handle, ARB_Add_Output)'nFile.Close(ARB_Add_Handle)'nARB_Add_Handle = 0'nARB_Add_Output = '"'"'nEvent.CreateMS(1, 1, '"." ++ ScriptName ++ "('''"Refresh'''")'")'nEvent.DestroyThis'nEndIf")
+
+    Quit
+
+; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ; The Edit alias opens this script in Notepad. You may wish to change
 ; it so that your preferred editor is used.
 
@@ -139,14 +179,14 @@ Quit
 
 @Refresh
 
-    .Alias("Refresh")
+    Do("." ++ ScriptName, "('"Refresh'")")
     Quit
 
 ; ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ; The Define alias takes the parameter specified after it and looks it
 ; up in an online dictionary.
 
-@Define
+@Def
 
     Do("http://dictionary.reference.com/search?q=" ++ ReplaceChars(Arg(1), " ", "+"), "")
     Quit
