@@ -1,8 +1,8 @@
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 Alias Run Box
 ¯¯¯¯¯¯¯¯¯¯¯¯¯
-Version 2.0
-Saturday, 8 May 2004
+Version 3.0
+Saturday, 22 May 2004
 ________________________________________________________________________
 
 What?
@@ -15,11 +15,18 @@ ________________________________________________________________________
 
 Requirements
 ¯¯¯¯¯¯¯¯¯¯¯¯
-This script uses features found in PowerPro v3.9 and later.
+This script uses features found in PowerPro v3.8.13 onwards, and follows
+standard configuration.
 
-The ‘Use Quote for Escape in Expression Strings’ checkbox, found under
-Setup > Advanced Setup > Characters, must be ticked for the script to
-work. This option is not ticked by default.
+The ‘Use Standard Configuration’ checkbox, found under Setup > Advanced
+Setup > Configuration, should be ticked for the script to work without
+trouble.
+
+A revised version of the Vec plugin is used, which is released with
+versions of PowerPro later than v3.8.13. If you use PowerPro v3.8.13,
+please download the revised version at:
+
+> http://www.windowspowerpro.com/download/vec.dll
 ________________________________________________________________________
 
 Upgrading
@@ -55,7 +62,7 @@ The following steps are optional -- everything will work as expected
 even if these are not carried out.
 
 2. Add the following command to your Scheduler tab, set to run at
-   startup (assuming that you haven't renamed the script:
+   startup (assuming that you haven't renamed the script):
 
    .ARB("Load")
 
@@ -104,8 +111,8 @@ You will then be prompted for the alias to remove.
 
 You can create more complex aliases or modify existing ones by opening
 the script in a text editor and moving to the bottom of the file. After
-editing the script, you will need to invoke the Run box and run the
-‘Rebuild’ alias for new entries to be recognised.
+editing the script, you will need to invoke ARB and run the ‘Rebuild’
+alias for new entries to be recognised.
 
 An alias is defined by preceding its name with an @ sign, and then
 every PowerPro command that follows it will be executed until a ‘Quit’
@@ -133,6 +140,18 @@ ________________________________________________________________________
 
 Version History
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+v3.0 (22/5/2004)
+* Script:
+  * Modified to conform to standard configuration
+  * Renamed included ‘Add’, ‘Rebuild’, ‘Remove’ and ‘Edit’ aliases to
+    ‘ARB_Add’, ‘ARB_Rebuild’, ‘ARB_Remove’ and ‘ARB_Edit’ respectively,
+    as per David Troesch's request
+  * Renamed included ‘Acronym’ alias to ‘Acro’ for ease of typing
+  * Added ‘G’, ‘Go’ and ‘Eval’ aliases -- comments on their usage are
+    included within their definitions
+* Documentation:
+  * Added revised plugin inormation to Requirements section
+
 v2.0 (8/5/2004)
 * Script:
   * Complete rewrite
