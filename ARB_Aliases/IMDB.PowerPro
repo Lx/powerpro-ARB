@@ -1,0 +1,26 @@
+;
+; The IMDB alias performs an Internet Movie Database search on the text passed
+; to it.
+; ____________________________________________________________________________
+
+local SITE_PREFIX = ?"http://www.imdb.com/Find?select=All&for="
+
+local in = arg(1)
+local searchTerm = .@getEscaped(in)
+do(SITE_PREFIX ++ searchTerm)
+quit
+
+@getEscaped
+
+	local in = arg(1)
+
+	; Replace % characters first as other escaped characters will use it.
+	in = replaceChars(in, ?"%", ?"%25")
+	; Escape + before escaping spaces as + represents a space.
+	in = replaceChars(in, ?"+", ?"%2B")
+	in = replaceChars(in, ?" ", ?"+")
+	; Escape other problematic characters.
+	in = replaceChars(in, ?"&", ?"%26")
+	in = replaceChars(in, ?'"', ?"%22")
+
+	quit(in)

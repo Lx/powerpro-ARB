@@ -1,0 +1,25 @@
+;
+; The Acro alias performs an online acronym search on the text passed to it.
+; ____________________________________________________________________________
+
+local SITE_PREFIX = ?"http://www.acronymfinder.com/af-query.asp?String=exact&Acronym="
+
+local in = arg(1)
+local searchTerm = case(?"upper", .@getEscaped(in))
+do(SITE_PREFIX ++ searchTerm)
+quit
+
+@getEscaped
+
+	local in = arg(1)
+
+	; Replace % characters first as other escaped characters will use it.
+	in = replaceChars(in, ?"%", ?"%25")
+	; Escape + before escaping spaces as + represents a space.
+	in = replaceChars(in, ?"+", ?"%2B")
+	in = replaceChars(in, ?" ", ?"+")
+	; Escape other problematic characters.
+	in = replaceChars(in, ?"&", ?"%26")
+	in = replaceChars(in, ?'"', ?"%22")
+
+	quit(in)

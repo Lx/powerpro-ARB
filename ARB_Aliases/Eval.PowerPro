@@ -1,0 +1,21 @@
+;
+; The Eval alias passes its parameters to PowerPro for evaluation and outputs
+; the result to the PowerPro Debug window. Useful for checking up on a
+; PowerPro variable or performing a quick calculation, e.g.:
+;
+; Eval 56 + (80 * 3) + 79
+; Eval RecycleSize
+;
+; Executing this alias with Shift+Enter will pop up a message box instead.
+; ____________________________________________________________________________
+
+local in = arg(1)
+local out = eval(in)
+
+if (shift) do
+	messageBox(?"asterisk", out, in)
+else
+	Win.debug(?"--")	
+	Win.debug(out)
+	Win.debug(in, ?">>")
+endIf

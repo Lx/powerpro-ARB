@@ -1,0 +1,5 @@
+;
+; The PPS alias opens the current PowerPro configuration's Scripts folder.
+; ____________________________________________________________________________
+
+do(pProFolder ++ ?"Scripts")

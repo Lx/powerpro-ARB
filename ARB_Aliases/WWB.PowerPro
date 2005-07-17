@@ -1,0 +1,31 @@
+;
+; The WWB alias passes the specified page to the Wayback Machine or the
+; current page if called with no parameters.
+; ____________________________________________________________________________
+
+local SITE_PREFIX = ?"http://web.archive.org/web/*/"
+
+local in = arg(1)
+local searchTerm
+
+if (in == "")
+    in = browserURL
+
+local searchTerm = .@getEscaped(in)
+do(SITE_PREFIX ++ in)
+quit
+
+@getEscaped
+
+	local in = arg(1)
+
+	; Replace % characters first as other escaped characters will use it.
+	in = replaceChars(in, ?"%", ?"%25")
+	; Escape + before escaping spaces as + represents a space.
+	in = replaceChars(in, ?"+", ?"%2B")
+	in = replaceChars(in, ?" ", ?"+")
+	; Escape other problematic characters.
+	in = replaceChars(in, ?"&", ?"%26")
+	in = replaceChars(in, ?'"', ?"%22")
+
+	quit(in)

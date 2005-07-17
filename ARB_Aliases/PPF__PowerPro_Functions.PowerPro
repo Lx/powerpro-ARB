@@ -1,0 +1,5 @@
+;
+; The PPF alias opens PowerPro Help on the Functions page.
+; ____________________________________________________________________________
+
+WinHlp32 -I FunctionsCat %ProgramFiles%\PowerPro\PowerPro.hlp

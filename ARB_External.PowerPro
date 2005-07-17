@@ -1,12 +1,9 @@
 ;
-; ARB v4.0 Hybrid Edition
+; ARB v4.0 External Edition
 ; Written by Alex Peters, 13/6/2005
 ;
 ; Allows execution of aliases with parameter passing. Also accepts PowerPro
 ; commands, programs, folders, documents and Internet resources for execution.
-;
-; Aliases may exist as labels within the ARB script and/or as external scripts
-; matching a user-specified wildcard.
 ;
 ; Usage: .ARB()
 ;
@@ -35,11 +32,6 @@
 ;
 	local EXT_PREFIX = ?"ARB_Aliases\"
 ;
-; The CACHE_PATH constant holds the desired location to read/write internal
-; alias cache data.
-;
-	local CACHE_PATH = pProFolder ++ ?"Data\ARB_Cache.txt"
-;
 ; The HISTORY_PATH constant holds the desired location to read/write command
 ; history entries. Setting to 'NUL' will disable command history.
 ;
@@ -47,65 +39,15 @@
 ; ____________________________________________________________________________
 
 local LF = esc(?"\n", ?"\")
-static cacheVersion, intAliases, history, lastEntered
-
-; The cache data is not yet loaded if the cacheVersion variable is empty.
-; Attempt to load from disk if necessary.
-
-if (cacheVersion == "") do
-	local cacheFile = File.open(CACHE_PATH, ?"r")
-	if (cacheFile > 0) do
-		cacheVersion = File.readString(cacheFile)
-		for (1)
-			local alias = File.readString(cacheFile)
-			if (File.eof(cacheFile))
-				break
-			intAliases = intAliases ++ alias ++ LF
-		endFor
-		File.close(cacheFile)
-	endIf
-endIf
-
-; Determine the path to the ARB script. This is used for checking the time-
-; stamp and parsing for labels if necessary. Restricting the location and
-; extension of the ARB script also assures error-free use of internal aliases.
-
-local arbPath = scriptFolder ++ ?"\" ++ scriptName ++ ?".PowerPro"
-if (not(validPath(arbPath))) do
-	messageBox(?"stop", ?"The ARB script is improperly named or located. It must reside in '" ++ scriptFolder ++ ?"' with the extension '.PowerPro'.", ?"ARB Load Error")
-	quit
-endIf
-
-; Compare the current timestamp of the ARB script to the cache version (which
-; may still be undefined) and rebuild the cache if they don't match.
-
-local arbTimestamp = File.lastModified(arbPath)
-if (arbTimestamp != cacheVersion) do
-	intAliases = ""
-	local arbFile = File.open(arbPath, ?"r")
-	if (arbFile <= 0) do
-		messageBox(?"stop", ?"Cannot open the ARB script for parsing. Internal aliases are unavailable.", ?"ARB Alias Parse Error")
-	else
-		for (1)
-			local arbWord = word(File.readString(arbFile), 1)
-			if (File.eof(arbFile))
-				break
-			if (select(arbWord, 1) == ?"@")
-				intAliases = intAliases ++ remove(arbWord, 1) ++ LF
-		endFor
-		File.close(arbFile)
-		File.writeAll(CACHE_PATH, arbTimestamp ++ LF ++ intAliases)
-		cacheVersion = arbTimestamp
-	endIf
-endIf
+static history, lastEntered
 
 ; Scan for external aliases.
 
-local extAliases
-local extAliasPrefix = scriptFolder ++ ?"\" ++ EXT_PREFIX
-local scriptFiles = File.listFiles(extAliasPrefix ++ ?"*.PowerPro", 1)
+local aliases
+local aliasPrefix = scriptFolder ++ ?"\" ++ EXT_PREFIX
+local scriptFiles = File.listFiles(aliasPrefix ++ ?"*.PowerPro", 1)
 for (local i = line(scriptFiles, 0); i > 0; i = i - 1)
-	extAliases = extAliases ++ File.name(remove(line(scriptFiles, i), length(extAliasPrefix))) ++ LF
+	aliases = aliases ++ File.name(remove(line(scriptFiles, i), length(aliasPrefix))) ++ LF
 endFor
 
 ; Load history from disk if not already in memory.
@@ -115,7 +57,7 @@ if (history == "" && validPath(HISTORY_PATH))
 
 ; Present the ARB dialogue with the auto-completion vector.
 
-local autoComplete = Vec.createFromLines(intAliases ++ extAliases ++ history, 1)
+local autoComplete = Vec.createFromLines(aliases ++ history, 1)
 local cmd = inputDefault(lastEntered, ?"ARB v4.0", ?"file =autoComplete")
 autoComplete = Vec.destroy(autoComplete)
 if (not(pProFlag(0)))
@@ -127,7 +69,7 @@ if (cmd == "")
 
 ; Is the first word of the command line an alias?
 
-if (index(LF ++ intAliases ++ extAliases, LF ++ word(cmd, 1) ++ LF)) do
+if (index(LF ++ aliases, LF ++ word(cmd, 1) ++ LF)) do
 
 	local alias = word(cmd, 1)
 
@@ -138,12 +80,7 @@ if (index(LF ++ intAliases ++ extAliases, LF ++ word(cmd, 1) ++ LF)) do
 	params = replaceChars(params, ?'"', ?"\X22")
 	params = ?'(esc(?"' ++ params ++ ?'", ?"\"))'
 
-; Is the alias external? (External aliases get priority over internal ones of
-; the same name.)
-
-	cmd = ?"." ++ ScriptName ++ ?"@" ++ alias ++ params
-	if (validPath(scriptFolder ++ ?"\" ++ EXT_PREFIX ++ alias ++ ?".PowerPro"))
-		cmd = ?"." ++ EXT_PREFIX ++ alias ++ params
+	cmd = ?"." ++ EXT_PREFIX ++ alias ++ params
 
 else
 
@@ -161,8 +98,3 @@ endIf
 ; This prevents bad commands from throwing an ARB script error.
 
 Event.createMS(1, 1, cmd)
-quit
-
-; Internal aliases are defined past this point.
-; ____________________________________________________________________________
-

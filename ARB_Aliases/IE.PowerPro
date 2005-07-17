@@ -1,0 +1,12 @@
+;
+; The IE alias opens the specified page in Internet Explorer or the current
+; page if called with no parameters.
+; ____________________________________________________________________________
+
+local IE_PATH = ?"%ProgramFiles%\Internet Explorer\IExplore.exe"
+
+local in = arg(1)
+
+if (in == "")
+	in = browserURL
+do (IE_PATH, in)

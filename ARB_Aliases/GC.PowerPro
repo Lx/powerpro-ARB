@@ -1,0 +1,14 @@
+;
+; The GC alias fetches a Google cache of the specified page or the current
+; page if called with no parameters.
+; ____________________________________________________________________________
+
+local in = arg(1)
+
+if (in != "") do
+	.G(?"cache:" ++ in)
+elseIf (browserURL != "")
+	.G(?"cache:" ++ browserURL)
+else
+	messageBox(?"warning", ?"No open webpage was detected.", ?"GC - Google Cache")
+endIf

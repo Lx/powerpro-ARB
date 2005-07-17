@@ -1,0 +1,18 @@
+;
+; The Time alias executes the command passed to it and displays the time taken
+; to execute it via the PowerPro Debug window.
+; ____________________________________________________________________________
+
+local cmd = arg(1)
+local before, after, diff, numSecs
+
+before = perfCount
+do(cmd)
+after = perfCount
+
+diff = Int64.sub(after, before)
+numSecs = Float.divide(diff, perfFreq)
+
+Win.debug(?"--")
+Win.debug(?"Operation took", numSecs, ?"seconds")
+Win.debug(cmd)
