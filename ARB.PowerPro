@@ -126,10 +126,11 @@ if (cmd == "")
 	quit
 
 ; Is the first word of the command line an alias?
-
+global UseExternalScript=0
 if (index(LF ++ intAliases ++ extAliases, LF ++ word(cmd, 1) ++ LF)) do
 
 	local alias = word(cmd, 1)
+	
 
 ; Escape the parameter string into a bracketed evaluatable expression.
 
@@ -144,6 +145,9 @@ if (index(LF ++ intAliases ++ extAliases, LF ++ word(cmd, 1) ++ LF)) do
 	cmd = ?"." ++ ScriptName ++ ?"@" ++ alias ++ params
 	if (validPath(scriptFolder ++ ?"\" ++ EXT_PREFIX ++ alias ++ ?".PowerPro"))
 		cmd = ?"." ++ EXT_PREFIX ++ alias ++ params
+		global UseExternalScript=1
+		
+		
 
 else
 
@@ -160,7 +164,52 @@ endIf
 ; Queue the command to be executed under PowerPro's ownership (and not ARB's).
 ; This prevents bad commands from throwing an ARB script error.
 
-Event.createMS(1, 1, cmd)
+;##EDIT OVER ARB v4.0
+; If someone have better way to check if inputed text 
+; is a path on drive them please post it on yahoo group.
+
+;Check if inputed text is a path on disk
+;and surround it with qoutes. (win xp was not gettint the path with spaces)
+if(cmd.find("a:")>-1 or cmd.find("b:")>-1 or cmd.find("c:")>-1 or cmd.find("d:")>-1 or cmd.find("e:")>-1 or cmd.find("f:")>-1 or cmd.find("g:")>-1 )  do
+  Event.createMS(1, 1, "\"" ++ cmd ++ "\"")
+
+;If first letter is external script then execute it
+
+elseIf(UseExternalScript==1)
+  Event.createMS(1, 1, cmd)
+  
+
+;Else search input in google
+else
+
+	local SITE_PREFIX = ?"http://www.google.com/search?q="
+
+	global in2 = cmd
+	global searchTerm = .@getEscaped(in2)
+	do(SITE_PREFIX ++ searchTerm)
+	quit
+
+	@getEscaped
+
+		
+
+		; Replace % characters first as other escaped characters will use it.
+		in2 = replaceChars(in2, ?"%", ?"%25")
+		; Escape + before escaping spaces as + represents a space.
+		in2 = replaceChars(in2, ?"+", ?"%2B")
+		in2 = replaceChars(in2, ?" ", ?"+")
+		; Escape other problematic characters.
+		in2 = replaceChars(in2, ?"&", ?"%26")
+		in2 = replaceChars(in2, ?'"', ?"%22")
+		
+		quit(in2)	
+
+
+	
+	
+	
+
+endIf
 quit
 
 ; Internal aliases are defined past this point.
